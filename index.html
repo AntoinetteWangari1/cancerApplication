@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancer Cases in Kenya Counties</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    #map {
+      min-height: 100vh;
+      height:100%;
+    }
+    #analytics {
+      padding: 20px;
+    }
+    .cancer-icon {
+      background-color: rgba(176, 15, 194, 0.7);
+      color: white;
+      font-size: 14px;
+      text-align: center;
+      border-radius: 50%;
+      padding: 5px;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark mb-2" style="background-color: indigo;">
+    <a class="navbar-brand" href="#">Cancer Deaths in Kenya Counties</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-6 d-flex justify-content-center align-items-center">
+        <div id="analytics" class="text-center">
+          <p id="totalCases">Cancer cases: </p>
+          <p id="highestCases" class="d-none">County with Highest No of Cases: </p>
+          <p id="lowestCases" class="d-none">County with Least No of Cases: </p>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div id="map"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+  <script>
+    var map = L.map('map').setView([-1.286389, 36.817223], 6);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    var kenyaCancerData = [
+      { "lat": -1.2921, "lng": 36.8219, "county": "Nairobi", "maleCases": 500, "femaleCases": 300 },
+      { "lat": -0.0236, "lng": 37.9062, "county": "Mombasa", "maleCases": 450, "femaleCases": 320 },
+      { "lat": -0.4255, "lng": 36.9517, "county": "Nakuru", "maleCases": 300, "femaleCases": 210 },
+      { "lat": -0.0014, "lng": 37.0747, "county": "Machakos", "maleCases": 250, "femaleCases": 190 },
+      { "lat": 0.5143, "lng": 35.2698, "county": "Kisumu", "maleCases": 230, "femaleCases": 170 },
+      { "lat": -0.5996, "lng": 36.6020, "county": "Nyeri", "maleCases": 200, "femaleCases": 160 },
+      { "lat": 0.4742, "lng": 35.7470, "county": "Bungoma", "maleCases": 150, "femaleCases": 120 },
+      { "lat": -0.4723, "lng": 37.0031, "county": "Embu", "maleCases": 120, "femaleCases": 100 },
+      { "lat": -0.0933, "lng": 34.7666, "county": "Kakamega", "maleCases": 110, "femaleCases": 90 },
+      { "lat": -0.2710, "lng": 37.8878, "county": "Meru", "maleCases": 100, "femaleCases": 80 }
+    ];
+
+    function calculateAnalytics(data) {
+      var totalMaleCases = 0;
+      var totalFemaleCases = 0;
+      var highestCases = data[0];
+      var lowestCases = data[0];
+
+      data.forEach(function(item) {
+        totalMaleCases += item.maleCases;
+        totalFemaleCases += item.femaleCases;
+        if (item.maleCases + item.femaleCases > highestCases.maleCases + highestCases.femaleCases) highestCases = item;
+        if (item.maleCases + item.femaleCases < lowestCases.maleCases + lowestCases.femaleCases) lowestCases = item;
+      });
+
+      document.getElementById('totalCases').innerText = `Total Liver cancer deaths: ${totalMaleCases + totalFemaleCases}`;
+      document.getElementById('highestCases').innerText = `County with Highest No of Cases: ${highestCases.county}`;
+      document.getElementById('lowestCases').innerText = `County with Least No of Cases: ${lowestCases.county}`;
+    }
+
+    function createMapMarkers(data) {
+      data.forEach(function(item) {
+        var marker = L.circle([item.lat, item.lng], {
+          color: 'purple',
+          fillColor: 'purple',
+          fillOpacity: 0.5,
+          radius: Math.sqrt(item.maleCases + item.femaleCases) * 1000
+        }).addTo(map);
+        
+        marker.bindPopup(`
+          <div class="cancer-icon">${item.maleCases + item.femaleCases}</div>
+          <div>
+            <h5>${item.county}</h5>
+            <p>Male Cases: ${item.maleCases}</p>
+            <p>Female Cases: ${item.femaleCases}</p>
+          </div>
+        `);
+      });
+    }
+
+    calculateAnalytics(kenyaCancerData);
+    createMapMarkers(kenyaCancerData);
+  </script>
+</body>
+</html>
